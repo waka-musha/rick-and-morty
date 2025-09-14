@@ -1,0 +1,23 @@
+* text=auto eol=lf
+*.dart  text eol=lf
+*.yaml  text eol=lf
+*.yml   text eol=lf
+*.arb   text eol=lf
+*.md    text eol=lf
+*.json  text eol=lf
+*.sh    text eol=lf
+*.bat   text eol=crlf
+
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.webp binary
+*.pdf  binary
+*.ttf  binary
+*.otf  binary
+*.mp4  binary
+*.zip  binary
+
+# *.g.dart        linguist-generated -diff
+# *.freezed.dart  linguist-generated -diff
