@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ta_rick_and_morty/features/characters_list/pages/characters_list_page.dart';
+import 'package:ta_rick_and_morty/features/characters_list/presentation/pages/characters_list_page.dart';
 
 class RickAndMortyApp extends StatelessWidget {
   const RickAndMortyApp({super.key});
