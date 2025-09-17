@@ -17,6 +17,7 @@ Future<void> initDI() async {
   final charactersBox = await Hive.openBox<Map<String, dynamic>>(
     Boxes.characters,
   );
+  await charactersBox.clear();
   final favoritesBox = await Hive.openBox<bool>(Boxes.favorites);
   final settingsBox = await Hive.openBox<String>(Boxes.settings);
 
