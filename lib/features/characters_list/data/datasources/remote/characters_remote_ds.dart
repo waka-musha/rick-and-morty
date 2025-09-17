@@ -7,7 +7,7 @@ class CharactersRemoteDataSource {
 
   Future<CharactersPageDto> fetchPage({required int page}) async {
     final res = await _api.get<Map<String, dynamic>>(
-      '/character',
+      'character',
       query: {'page': page},
     );
 

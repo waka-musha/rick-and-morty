@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:ta_rick_and_morty/features/characters_list/data/datasources/local/characters_cache_ds.dart';
 import 'package:ta_rick_and_morty/features/characters_list/data/datasources/local/favorites_local_ds.dart';
 import 'package:ta_rick_and_morty/features/characters_list/data/datasources/remote/characters_remote_ds.dart';
@@ -38,12 +39,16 @@ class CharactersRepoImpl implements CharactersRepo {
       try {
         dto = await _remote.fetchPage(page: page);
         await _cache.savePageJson(page: page, json: dto.toJson());
-      } on DioException {
+      } on DioException catch (e) {
+        debugPrint(
+          '[DIO] ${e.type} ${e.response?.statusCode} ${e.requestOptions.uri}',
+        );
         dto = _tryLoadFromCache(page);
         if (dto == null) {
           throw Exception('Network error and no cache for page $page.');
         }
-      } on Object {
+      } on Object catch (e) {
+        debugPrint('[UNEXPECTED] $e');
         dto = _tryLoadFromCache(page);
         if (dto == null) {
           throw Exception('Unexpected error and no cache for page $page.');
