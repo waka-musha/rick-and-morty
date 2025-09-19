@@ -10,6 +10,7 @@ class CacheKeys {
   CacheKeys._();
 
   static String charactersPage(int page) => 'page:$page';
+  static String characterById(int id) => 'char:$id';
 }
 
 class SettingsKeys {

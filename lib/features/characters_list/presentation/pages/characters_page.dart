@@ -1,7 +1,7 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ta_rick_and_morty/app/di.dart';
-import 'package:ta_rick_and_morty/features/characters_list/domain/repositories/characters_repo.dart';
 import 'package:ta_rick_and_morty/features/characters_list/presentation/cubit/characters_cubit.dart';
 import 'package:ta_rick_and_morty/features/characters_list/presentation/cubit/characters_state.dart';
 import 'package:ta_rick_and_morty/features/characters_list/presentation/widgets/character_card.dart';
@@ -14,22 +14,22 @@ class CharactersPage extends StatefulWidget {
 }
 
 class _CharactersPageState extends State<CharactersPage> {
+  late final CharactersCubit _cubit;
   late final ScrollController _controller;
 
   @override
   void initState() {
     super.initState();
+    _cubit = CharactersCubit(sl())..loadFirstPage();
     _controller = ScrollController()..addListener(_onScroll);
   }
 
   void _onScroll() {
-    final cubit = context.read<CharactersCubit>();
     if (!_controller.hasClients) return;
-
     final position = _controller.position;
     final threshold = position.maxScrollExtent * 0.8;
     if (position.pixels >= threshold) {
-      cubit.loadNextPage();
+      _cubit.loadNextPage();
     }
   }
 
@@ -38,13 +38,14 @@ class _CharactersPageState extends State<CharactersPage> {
     _controller
       ..removeListener(_onScroll)
       ..dispose();
+    unawaited(_cubit.close());
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => CharactersCubit(sl<CharactersRepo>())..loadFirstPage(),
+    return BlocProvider.value(
+      value: _cubit,
       child: Scaffold(
         appBar: AppBar(title: const Text('Персонажи')),
         body: BlocBuilder<CharactersCubit, CharactersState>(
@@ -52,19 +53,18 @@ class _CharactersPageState extends State<CharactersPage> {
             switch (state.status) {
               case CharactersStatus.initial:
               case CharactersStatus.loading:
-                return const _CenterLoader();
+                return const Center(child: CircularProgressIndicator());
               case CharactersStatus.failure:
                 return _ErrorView(
                   message: state.error ?? 'Не удалось загрузить данные',
-                  onRetry: () =>
-                      context.read<CharactersCubit>().loadFirstPage(),
+                  onRetry: () => _cubit.loadFirstPage(forceRefresh: true),
                 );
               case CharactersStatus.success:
                 if (state.items.isEmpty) {
                   return const _EmptyView();
                 }
                 return RefreshIndicator(
-                  onRefresh: () => context.read<CharactersCubit>().refresh(),
+                  onRefresh: () => _cubit.refresh(),
                   child: ListView.builder(
                     controller: _controller,
                     itemCount:
@@ -85,9 +85,8 @@ class _CharactersPageState extends State<CharactersPage> {
                         padding: const EdgeInsets.symmetric(vertical: 6),
                         child: CharacterCard(
                           character: character,
-                          onToggleFavorite: () => context
-                              .read<CharactersCubit>()
-                              .toggleFavorite(character.id),
+                          onToggleFavorite: () =>
+                              _cubit.toggleFavorite(character.id),
                         ),
                       );
                     },
@@ -101,22 +100,11 @@ class _CharactersPageState extends State<CharactersPage> {
   }
 }
 
-class _CenterLoader extends StatelessWidget {
-  const _CenterLoader();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(child: CircularProgressIndicator());
-  }
-}
-
 class _EmptyView extends StatelessWidget {
   const _EmptyView();
 
   @override
-  Widget build(BuildContext context) {
-    return const Center(child: Text('Пусто'));
-  }
+  Widget build(BuildContext context) => const Center(child: Text('Пусто :('));
 }
 
 class _ErrorView extends StatelessWidget {
