@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:ta_rick_and_morty/core/db/boxes.dart';
 import 'package:ta_rick_and_morty/core/network/api_client.dart';
+import 'package:ta_rick_and_morty/core/theme/theme_storage.dart';
 import 'package:ta_rick_and_morty/features/characters_list/data/datasources/local/characters_cache_ds.dart';
 import 'package:ta_rick_and_morty/features/characters_list/data/datasources/local/favorites_local_ds.dart';
 import 'package:ta_rick_and_morty/features/characters_list/data/datasources/remote/characters_remote_ds.dart';
@@ -17,12 +18,13 @@ Future<void> initDI() async {
   final charactersBox = await Hive.openBox<Map<String, dynamic>>(
     Boxes.characters,
   );
+  await charactersBox.clear();
   final favoritesBox = await Hive.openBox<bool>(Boxes.favorites);
   final settingsBox = await Hive.openBox<String>(Boxes.settings);
 
   final dio = Dio(
     BaseOptions(
-      baseUrl: 'https://rickandmortyapi.com/api',
+      baseUrl: 'https://rickandmortyapi.com/api/',
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
     ),
@@ -61,6 +63,11 @@ Future<void> initDI() async {
         remote: sl<CharactersRemoteDataSource>(),
         cache: sl<CharactersCacheLocalDataSource>(),
         favorites: sl<FavoritesLocalDataSource>(),
+      ),
+    )
+    ..registerLazySingleton<ThemeStorage>(
+      () => ThemeStorage(
+        sl<Box<String>>(instanceName: Boxes.settings),
       ),
     );
 }

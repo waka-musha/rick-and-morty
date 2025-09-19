@@ -25,7 +25,7 @@ Map<String, dynamic> _$CharacterDtoToJson(_CharacterDto instance) =>
       'status': instance.status,
       'species': instance.species,
       'image': instance.image,
-      'location': instance.location,
+      'location': instance.location.toJson(),
     };
 
 _LocationRefDto _$LocationRefDtoFromJson(Map<String, dynamic> json) =>

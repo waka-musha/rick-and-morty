@@ -15,7 +15,10 @@ _CharactersPageDto _$CharactersPageDtoFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$CharactersPageDtoToJson(_CharactersPageDto instance) =>
-    <String, dynamic>{'info': instance.info, 'results': instance.results};
+    <String, dynamic>{
+      'info': instance.info.toJson(),
+      'results': instance.results.map((e) => e.toJson()).toList(),
+    };
 
 _InfoDto _$InfoDtoFromJson(Map<String, dynamic> json) => _InfoDto(
   count: (json['count'] as num).toInt(),
