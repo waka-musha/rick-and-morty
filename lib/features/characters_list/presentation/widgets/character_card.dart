@@ -42,6 +42,7 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return SizedBox(
       width: 110,
       height: 110,
@@ -49,7 +50,8 @@ class _Avatar extends StatelessWidget {
         imageUrl: imageUrl,
         fit: BoxFit.cover,
         placeholder: (_, _) => const Center(child: CircularProgressIndicator()),
-        errorWidget: (_, _, _) => const Center(child: Icon(Icons.broken_image)),
+        errorWidget: (_, _, _) =>
+            Center(child: Icon(Icons.broken_image, color: cs.onSurfaceVariant)),
       ),
     );
   }
@@ -66,7 +68,9 @@ class _Info extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    final theme = Theme.of(context);
+    final tt = theme.textTheme;
+    final cs = theme.colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,13 +80,16 @@ class _Info extends StatelessWidget {
             Expanded(
               child: Text(
                 character.name,
-                style: textTheme.titleMedium,
+                style: tt.titleMedium,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
             IconButton(
               onPressed: onToggleFavorite,
+              tooltip: character.isFavorite
+                  ? 'Убрать из избранного'
+                  : 'В избранное',
               icon: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 180),
                 transitionBuilder: (child, anim) =>
@@ -90,31 +97,88 @@ class _Info extends StatelessWidget {
                 child: Icon(
                   character.isFavorite ? Icons.star : Icons.star_border,
                   key: ValueKey<bool>(character.isFavorite),
+                  color: character.isFavorite ? cs.secondary : null,
                 ),
               ),
-              tooltip: character.isFavorite
-                  ? 'Убрать из избранного'
-                  : 'В избранное',
             ),
           ],
         ),
         const SizedBox(height: 6),
-        Text(
-          '${character.status} • ${character.species}',
-          style: textTheme.bodyMedium,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
+        Row(
+          children: [
+            _StatusChip(status: character.status),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                character.species,
+                style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 4),
         Text(
           'Локация: ${character.locationName}',
-          style: textTheme.bodySmall?.copyWith(
-            color: Theme.of(context).hintColor,
-          ),
+          style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
       ],
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({required this.status});
+
+  final String status;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final s = status.toLowerCase();
+    late final Color bg;
+    late final Color on;
+
+    switch (s) {
+      case 'alive':
+        bg = cs.primaryContainer;
+        on = cs.onPrimaryContainer;
+      case 'dead':
+        bg = cs.errorContainer;
+        on = cs.onErrorContainer;
+      case 'unknown':
+        bg = cs.surfaceContainerHighest;
+        on = cs.onSurface;
+      default:
+        bg = cs.surfaceContainerHighest;
+        on = cs.onSurface;
+    }
+
+    String capitalized(String v) {
+      final t = v.trim();
+      if (t.isEmpty) return t;
+      return '${t[0].toUpperCase()}${t.substring(1).toLowerCase()}';
+    }
+
+    final label = capitalized(status);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: on.withValues(alpha: 0.24)),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: on,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 }

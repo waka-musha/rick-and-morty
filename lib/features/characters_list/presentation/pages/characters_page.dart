@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ta_rick_and_morty/app/di.dart';
+import 'package:ta_rick_and_morty/core/theme/theme_mode_action.dart';
 import 'package:ta_rick_and_morty/features/characters_list/presentation/cubit/characters_cubit.dart';
 import 'package:ta_rick_and_morty/features/characters_list/presentation/cubit/characters_state.dart';
 import 'package:ta_rick_and_morty/features/characters_list/presentation/widgets/character_card.dart';
@@ -44,10 +45,16 @@ class _CharactersPageState extends State<CharactersPage> {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     return BlocProvider.value(
       value: _cubit,
       child: Scaffold(
-        appBar: AppBar(title: const Text('Персонажи')),
+        appBar: AppBar(
+          title: const Text('Персонажи'),
+          actions: const [ThemeModeAction()],
+          flexibleSpace: const _AppBarGradient(),
+        ),
         body: BlocBuilder<CharactersCubit, CharactersState>(
           builder: (context, state) {
             switch (state.status) {
@@ -64,6 +71,7 @@ class _CharactersPageState extends State<CharactersPage> {
                   return const _EmptyView();
                 }
                 return RefreshIndicator(
+                  color: cs.primary,
                   onRefresh: () => _cubit.refresh(),
                   child: ListView.builder(
                     controller: _controller,
@@ -104,7 +112,7 @@ class _EmptyView extends StatelessWidget {
   const _EmptyView();
 
   @override
-  Widget build(BuildContext context) => const Center(child: Text('Пусто :('));
+  Widget build(BuildContext context) => const Center(child: Text('Пусто'));
 }
 
 class _ErrorView extends StatelessWidget {
@@ -124,6 +132,27 @@ class _ErrorView extends StatelessWidget {
             Text(message, textAlign: TextAlign.center),
             const SizedBox(height: 12),
             FilledButton(onPressed: onRetry, child: const Text('Повторить')),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AppBarGradient extends StatelessWidget {
+  const _AppBarGradient();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            cs.primary.withValues(alpha: 0.90),
+            cs.secondary.withValues(alpha: 0.90),
           ],
         ),
       ),
